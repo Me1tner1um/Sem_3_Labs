@@ -49,9 +49,9 @@ int main() {
 
     std::cout << "\nDecrementation:\n";
     std::cout << "1. ";
-    (--(*poly1)).polynomial_out();
+    (--(--(*poly1))).polynomial_out();
     std::cout << "2. ";
-    (--(*poly2)).polynomial_out();
+    (--(--(*poly2))).polynomial_out();
 
     delete poly1;
     delete poly2;

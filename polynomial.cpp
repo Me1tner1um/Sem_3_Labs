@@ -284,3 +284,140 @@ Polynomial& Polynomial::operator -- () {
     _level--;
     return *this;
 }
+
+
+
+
+// Output operator
+std::ostream& operator << (std::ostream& os, const Polynomial& polynomial) {
+    Node* head = polynomial._coefficients;
+    bool first = true;
+    while (head != nullptr) {
+        if (head->value != 0) {
+            if (!first && head->value > 0) os << '+';
+            os << head->value;
+            if (head->index > 0) os << "x^" << head->index;
+            first = false;
+        }
+        head = head->next;
+    }
+    return os;
+}
+
+
+
+
+// Input operator
+std::istream& operator >> (std::istream& is, Polynomial& polynomial) {
+    int level = 0;
+    double coefficient = 0;
+
+    std::cout << "Enter the level of polynomial: ";
+    is >> level;
+
+    polynomial.set_level(level);
+    
+    // Clear existing coefficients
+    if (polynomial._coefficients != nullptr) {
+        delete polynomial._coefficients;
+        polynomial._coefficients = nullptr;
+    }
+
+    std::cout << "Enter coefficients (from x^0 to x^" << level << "): ";
+    for (int i = 0; i <= level; i++) {
+        is >> coefficient;
+        polynomial.add_coeficient(coefficient);
+    }
+    
+    if (polynomial._coefficients != nullptr && polynomial._coefficients->get_length() != level + 1) {
+        polynomial._level = polynomial._coefficients->get_length() - 1;
+    }
+    
+    return is;
+}
+
+
+
+
+// Text file save/load methods
+void Polynomial::save_to_text_file(const std::string& filename) const {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open file for writing: " + filename);
+    }
+    
+    file << _level << std::endl;
+    Node* current = _coefficients;
+    while (current != nullptr) {
+        file << current->value << " ";
+        current = current->next;
+    }
+    file << std::endl;
+}
+
+
+
+
+void Polynomial::load_from_text_file(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open file for reading: " + filename);
+    }
+    
+    // Clear existing coefficients
+    if (_coefficients != nullptr) {
+        delete _coefficients;
+        _coefficients = nullptr;
+    }
+    
+    file >> _level;
+    
+    for (int i = 0; i <= _level; i++) {
+        double value;
+        file >> value;
+        add_coeficient(value);
+    }
+}
+
+
+
+
+// Binary file save/load methods
+void Polynomial::save_to_binary_file(const std::string& filename) const {
+    std::ofstream file(filename, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open file for writing: " + filename);
+    }
+    
+    file.write(reinterpret_cast<const char*>(&_level), sizeof(_level));
+    
+    Node* current = _coefficients;
+    while (current != nullptr) {
+        file.write(reinterpret_cast<const char*>(&current->value), sizeof(current->value));
+        current = current->next;
+    }
+}
+
+
+
+
+void Polynomial::load_from_binary_file(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open file for reading: " + filename);
+    }
+    
+    // Clear existing coefficients
+    if (_coefficients != nullptr) {
+        delete _coefficients;
+        _coefficients = nullptr;
+    }
+    
+    file.read(reinterpret_cast<char*>(&_level), sizeof(_level));
+    
+    for (int i = 0; i <= _level; i++) {
+        double value;
+        file.read(reinterpret_cast<char*>(&value), sizeof(value));
+        add_coeficient(value);
+    }
+}
